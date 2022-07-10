@@ -1,21 +1,80 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit , ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 
-import { Gene } from '../gene'
-import { GENES } from '../mock-genes';
-
+import { Gene } from '../gene';
+import {GeneService} from '../gene.service';
 
 @Component({
   selector: 'app-genes',
   templateUrl: './genes.component.html',
   styleUrls: ['./genes.component.css']
 })
-export class GenesComponent implements OnInit {
+export class GenesComponent implements OnInit , AfterViewInit {
 
-  constructor() { }
+  constructor(private geneService: GeneService) { }
 
-  genes = GENES;
+  gene!: Gene;
+
+  getGene(): Gene{
+    return this.gene = this.geneService.getGenes();
+  }
   
   ngOnInit(): void {
+    this.getGene();
+  }
+
+
+  @ViewChild('myCanvas')
+  private myCanvas: ElementRef = {} as ElementRef;
+
+  public context!: CanvasRenderingContext2D;
+
+
+  ngAfterViewInit(): void {
+    this.context = this.myCanvas.nativeElement.getContext('2d');
+    this.draw();
+  }
+
+  private findBiggestNumber(): number{
+    let biggestNumber:number = 0;
+    for(var trans of this.gene.transcripts){
+      if (trans.exons[trans.exons.length - 1].stop > biggestNumber){
+        biggestNumber = trans.exons[trans.exons.length - 1].stop;
+      };
+    }
+    return biggestNumber;
+  }
+
+  private draw() {
+    let maxlenght: number = 800;
+    let pxBetweenTrans: number = 30;
+    let currPxBetweenTrans: number = 0;
+
+    let startNum: number;
+    let finishNum: number = this.findBiggestNumber();
+
+    startNum = this.gene.transcripts[0].exons[0].start;
+    let difference: number = finishNum - startNum;
+    let coef: number = difference / maxlenght;
+
+    console.log(finishNum);
+
+   
+   let currLenght:number = 0; 
+
+    for(var trans of this.gene.transcripts){
+      currPxBetweenTrans += pxBetweenTrans;
+      currLenght = (trans.exons[trans.exons.length - 1].stop - startNum)/coef;
+      
+      
+      for(var exon of trans.exons){
+        this.context.fillRect(50 + (exon.start - startNum)/coef, currPxBetweenTrans -4, (exon.stop - exon.start)/coef, 10);
+        
+      }
+      this.context.fillRect(50, currPxBetweenTrans, currLenght, 1);
+      this.context.fillText("Stop: " + String(finishNum),50,currPxBetweenTrans + 15);
+    }
+
+
   }
 
 }

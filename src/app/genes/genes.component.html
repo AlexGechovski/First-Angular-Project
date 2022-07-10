@@ -1,9 +1,10 @@
 <h2>Genes</h2>
 <ul class="heroes">
-    <li *ngFor="let gene of genes">
+    <li>
       <button type="button">
         <span class="badge"></span>
-        <span class="name">{{genes[0].gene}}</span>
+        <span class="name">{{gene.gene}}</span>
       </button>
     </li>
-  </ul>
+</ul>
+<canvas #myCanvas width="1500" height="1000"></canvas>
